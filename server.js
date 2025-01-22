@@ -2,16 +2,19 @@ const express = require('express');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+const cors = require('cors');
 
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/weatherApp', {
-  useNewUrlParser: true,
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.r7tqb.mongodb.net/weatherApp?retryWrites=true&w=majority`, {
   useUnifiedTopology: true,
 });
+
 mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB');
 });
@@ -25,6 +28,7 @@ const citySchema = new mongoose.Schema({
 const City = mongoose.model('City', citySchema);
 
 // Middleware
+app.use(cors()); // Enable CORS
 app.use(bodyParser.json());
 app.use(express.static('public'));
 

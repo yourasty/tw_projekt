@@ -24,6 +24,7 @@
 
       .white-block {
         display: flex;
+        flex-direction: column;
         align-self: stretch;
         align-items: center;
         justify-content: center;
@@ -36,6 +37,10 @@
         &.list {
           flex-direction: column;
           align-items: stretch;
+        }
+
+        @media (min-width: 480px) {
+          flex-direction: row;
         }
       }
 
@@ -86,26 +91,30 @@
         -webkit-user-select: none;
         touch-action: manipulation;
         width: fit-content;
-      }
 
-      button:disabled {
-        cursor: unset;
-      }
+        span {
+          opacity: 0;
+        }
 
-      button span {
-        opacity: 0;
-      }
+        .loading span {
+          width: 14px;
+          height: 14px;
+          border: 2px solid #fff;
+          border-bottom-color: #ff3d00;
+          border-radius: 50%;
+          display: inline-block;
+          box-sizing: border-box;
+          animation: rotation 1s linear infinite;
+          opacity: 1;
+        }
 
-      button.loading span {
-        width: 14px;
-        height: 14px;
-        border: 2px solid #fff;
-        border-bottom-color: #ff3d00;
-        border-radius: 50%;
-        display: inline-block;
-        box-sizing: border-box;
-        animation: rotation 1s linear infinite;
-        opacity: 1;
+        &:hover {
+          box-shadow: 0 0 4px rgba(0, 0, 0, 0.1) inset;
+        }
+
+        &:disabled {
+          cursor: unset;
+        }
       }
 
       @keyframes rotation {
@@ -125,17 +134,21 @@
       li {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        gap: 8px;
         align-items: center;
-        background: #fff;
-        margin: 5px 0;
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
 
-        &:hover {
-          transform: scale(102%);
+        .favorite {
+          flex-grow: 1;
+          background: #fff;
+          margin: 5px 0;
+          padding: 10px;
+          border-radius: 5px;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+          cursor: pointer;
+
+          &:hover {
+            transform: scale(102%);
+          }
         }
       }
 
@@ -178,8 +191,8 @@
       <h2>Favorite Cities</h2>
       <ul class="white-block list">
         <p v-if="!favorites.length">Seems like you dont have any favorite cities</p>
-        <li v-for="fav in favorites" :key="fav._id" @click="() => restoreFavorite(fav.weather.name)">
-          {{ fav.name }}
+        <li v-for="fav in favorites" :key="fav._id">
+          <div class="favorite" @click="() => restoreFavorite(fav.weather.name)">{{ fav.name }}</div>
           <button :class="{loading: deleting}" :disabled="deleting" @click="() => deleteFavorite(fav._id)">
             Delete
             <span></span>

@@ -85,6 +85,7 @@
         user-select: none;
         -webkit-user-select: none;
         touch-action: manipulation;
+        width: fit-content;
       }
 
       button:disabled {
@@ -131,6 +132,11 @@
         padding: 10px;
         border-radius: 5px;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(102%);
+        }
       }
 
       p {
@@ -161,7 +167,7 @@
           <h3>{{ weather.name }}</h3>
           <p>Temperature: {{ weather.main.temp }}°C</p>
           <p>Weather: {{ weather.weather[0].description }}</p>
-          <button :class="{loading: saving}" :disabled="saving" @click="saveFavorite">
+          <button v-if="!isFavorite" :class="{loading: saving}" :disabled="saving" @click="saveFavorite">
             Save to Favorites
             <span></span>
           </button>
@@ -172,7 +178,7 @@
       <h2>Favorite Cities</h2>
       <ul class="white-block list">
         <p v-if="!favorites.length">Seems like you dont have any favorite cities</p>
-        <li v-for="fav in favorites" :key="fav._id">
+        <li v-for="fav in favorites" :key="fav._id" @click="() => restoreFavorite(fav.weather.name)">
           {{ fav.name }}
           <button :class="{loading: deleting}" :disabled="deleting" @click="() => deleteFavorite(fav._id)">
             Delete
@@ -194,6 +200,11 @@
             saving: false,
             deleting: false,
           };
+        },
+        computed: {
+          isFavorite() {
+            return this.favorites.find(entry => entry.weather.name === this.weather?.name)
+          }
         },
         methods: {
           async fetchWeather() {
@@ -261,9 +272,17 @@
             }
             this.deleting = false;
           },
+          restoreFavorite(city) {
+            this.city = city;
+            this.fetchWeather();
+          }
         },
         mounted() {
-          this.loadFavorites();
+          this.loadFavorites().then(() => {
+            if (this.favorites.length){
+              this.restoreFavorite(this.favorites[0].weather.name);
+            }
+          });
         },
       });
 

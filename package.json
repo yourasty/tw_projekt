@@ -1,0 +1,23 @@
+{
+  "name": "tw_projekt",
+  "version": "1.0.0",
+  "description": "Aplikacja pogoda",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourasty/tw_projekt.git"
+  },
+  "author": "Piotr Lipowski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yourasty/tw_projekt/issues"
+  },
+  "homepage": "https://github.com/yourasty/tw_projekt#readme",
+  "dependencies": {
+    "mongoose": "^8.9.5"
+  }
+}

@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weather App</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f9;
-    }
-    input {
-      margin-bottom: 10px;
-      padding: 10px;
-      font-size: 16px;
-      width: 300px;
-    }
-    button {
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f9;
+      }
+
+      input {
+        margin-bottom: 10px;
+        padding: 10px;
+        font-size: 16px;
+        width: 300px;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      li {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
@@ -37,87 +41,99 @@
         padding: 10px;
         border-radius: 5px;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <h1>Weather App</h1>
-    <input type="text" v-model="city" placeholder="Enter city">
-    <button @click="fetchWeather">Search</button>
+      }
+    </style>
+  </head>
 
-    <div v-if="weather">
-      <h3>{{ weather.name }}</h3>
-      <p>Temperature: {{ weather.main.temp }}°C</p>
-      <p>Weather: {{ weather.weather[0].description }}</p>
-      <button @click="saveFavorite">Save to Favorites</button>
+  <body>
+    <div id="app">
+      <h1>Weather App</h1>
+      <input type="text" v-model="city" placeholder="Enter city" />
+      <button @click="fetchWeather">Search</button>
+
+      <div v-if="weather">
+        <h3>{{ weather.name }}</h3>
+        <p>Temperature: {{ weather.main.temp }}°C</p>
+        <p>Weather: {{ weather.weather[0].description }}</p>
+        <button @click="saveFavorite">Save to Favorites</button>
+      </div>
+
+      <h2>Favorite Cities</h2>
+      <ul>
+        <li v-for="fav in favorites" :key="fav._id">
+          {{ fav.name }}<button @click="() => deleteFavorite(fav._id)">
+            Delete
+          </button>
+        </li>
+      </ul>
     </div>
 
-    <h2>Favorite Cities</h2>
-    <ul>
-      <li v-for="fav in favorites" :key="fav._id">{{ fav.name }}<button @click="() => deleteFavorite(fav._id)">Delete</button></li>
-    </ul>
-  </div>
-
-  <script>
-    const baseApiUrl = 'http://localhost:3000'
-    const app = Vue.createApp({
-      data() {
-        return {
-          city: '',
-          weather: null,
-          favorites: [],
-        };
-      },
-      methods: {
-        async fetchWeather() {
-          if (!this.city) {
-            alert('Please enter a city');
-            return;
-          }
-          try {
-            const response = await fetch(`${baseApiUrl}/api/weather?city=${this.city}`);
-            this.weather = await response.json();
-          } catch (error) {
-            alert('Failed to fetch weather data');
-          }
+    <script>
+      const baseApiUrl = "http://localhost:3000";
+      const app = Vue.createApp({
+        data() {
+          return {
+            city: "",
+            weather: null,
+            favorites: [],
+          };
         },
-        async saveFavorite() {
-          if (!this.weather) return;
-          try {
-            await fetch(`${baseApiUrl}/api/favorites`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: this.weather.name, weather: this.weather }),
-            });
-            this.loadFavorites();
-          } catch (error) {
-            alert('Failed to save favorite city');
-          }
-        },
-        async loadFavorites() {
-          try {
-            const response = await fetch(`${baseApiUrl}/api/favorites`);
-            this.favorites = await response.json();
-          } catch (error) {
-            alert('Failed to load favorite cities');
-          }
-        },
-        async deleteFavorite(id) {
-            try {
-                await fetch(`${baseApiUrl}/api/favorites/${id}`, { method: 'DELETE' });
-                this.loadFavorites();
-            } catch (error) {
-                alert('Failed to delete favorite city');
+        methods: {
+          async fetchWeather() {
+            if (!this.city) {
+              alert("Please enter a city");
+              return;
             }
-        }
-      },
-      mounted() {
-        this.loadFavorites();
-      },
-    });
+            try {
+              const response = await fetch(
+                `${baseApiUrl}/api/weather?city=${this.city}`
+              );
+              this.weather = await response.json();
+            } catch (error) {
+              alert("Failed to fetch weather data");
+            }
+          },
+          async saveFavorite() {
+            if (!this.weather) return;
+            try {
+              await fetch(`${baseApiUrl}/api/favorites`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: this.weather.name,
+                  weather: this.weather,
+                }),
+              });
+              this.loadFavorites();
+            } catch (error) {
+              alert("Failed to save favorite city");
+            }
+          },
+          async loadFavorites() {
+            try {
+              const response = await fetch(`${baseApiUrl}/api/favorites`);
+              this.favorites = await response.json();
+            } catch (error) {
+              alert("Failed to load favorite cities");
+            }
+          },
+          async deleteFavorite(id) {
+            try {
+              await fetch(`${baseApiUrl}/api/favorites/${id}`, {
+                method: "DELETE",
+              });
+              this.loadFavorites();
+            } catch (error) {
+              alert("Failed to delete favorite city");
+            }
+          },
+        },
+        mounted() {
+          this.loadFavorites();
+        },
+      });
 
-    app.mount('#app');
-  </script>
-</body>
+      app.mount("#app");
+    </script>
+  </body>
 </html>

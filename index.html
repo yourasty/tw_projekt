@@ -8,22 +8,105 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        margin: 0;
+        margin: 0 auto;
         padding: 20px;
         background-color: #f4f4f9;
+        max-width: 800px;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        width: 100%;
+      }
+
+      .white-block {
+        display: flex;
+        align-self: stretch;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background-color: white;
+        border-radius: 8px;
+        padding: 16px;
+        flex: 1 1 100%;
       }
 
       input {
-        margin-bottom: 10px;
-        padding: 10px;
+        border: 3px solid #000;
+        border-radius: 5px;
+        height: 50px;
+        line-height: normal;
+        color: #282828;
+        display: inline-block;
+        min-width: 200px;
+        box-sizing: border-box;
+        user-select: auto;
         font-size: 16px;
-        width: 300px;
+        padding: 0 6px;
+        padding-left: 12px;
+      }
+
+      input:focus {
+        border: 3px solid #5551ff;
       }
 
       button {
-        padding: 10px;
-        font-size: 16px;
+        background-color: rgba(51, 51, 51, 0.05);
+        border-radius: 8px;
+        border-width: 0;
+        color: #333333;
         cursor: pointer;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 8px;
+        font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+          sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 10px 16px;
+        text-align: center;
+        transition: all 200ms;
+        vertical-align: baseline;
+        white-space: nowrap;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+
+      button:disabled {
+        cursor: unset;
+      }
+
+      button span {
+        opacity: 0;
+      }
+
+      button.loading span {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #fff;
+        border-bottom-color: #ff3d00;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+        opacity: 1;
+      }
+
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       ul {
@@ -46,23 +129,42 @@
   </head>
 
   <body>
-    <div id="app">
+    <div class="main" id="app">
       <h1>Weather App</h1>
-      <input type="text" v-model="city" placeholder="Enter city" />
-      <button @click="fetchWeather">Search</button>
+      <div class="white-block">
+        <input
+          type="text"
+          v-model="city"
+          v-on:keyup.enter="fetchWeather"
+          placeholder="Enter city"
+        />
+        <button :class="{loading: searching}" :disabled="searching" @click="fetchWeather">
+          Search
+          <span></span>
+        </button>
+      </div>
 
-      <div v-if="weather">
-        <h3>{{ weather.name }}</h3>
-        <p>Temperature: {{ weather.main.temp }}°C</p>
-        <p>Weather: {{ weather.weather[0].description }}</p>
-        <button @click="saveFavorite">Save to Favorites</button>
+      <div class="white-block">
+        <template v-if="weather">
+          <h3>{{ weather.name }}</h3>
+          <p>Temperature: {{ weather.main.temp }}°C</p>
+          <p>Weather: {{ weather.weather[0].description }}</p>
+          <button :class="{loading: saving}" :disabled="saving" @click="saveFavorite">
+            Save to Favorites
+            <span></span>
+          </button>
+        </template>
+        <p v-else>Seach for a city to see the weather</p>
       </div>
 
       <h2>Favorite Cities</h2>
-      <ul>
+      <ul class="white-block">
+        <p v-if="favorites">Seems like you dont have any favorite cities</p>
         <li v-for="fav in favorites" :key="fav._id">
-          {{ fav.name }}<button @click="() => deleteFavorite(fav._id)">
+          {{ fav.name }}
+          <button :class="{loading: deleting}" :disabled="deleting" @click="() => deleteFavorite(fav._id)">
             Delete
+            <span></span>
           </button>
         </li>
       </ul>
@@ -76,25 +178,37 @@
             city: "",
             weather: null,
             favorites: [],
+            searching: false,
+            saving: false,
+            deleting: false,
           };
         },
         methods: {
           async fetchWeather() {
+            this.searching = true;
             if (!this.city) {
               alert("Please enter a city");
+              this.searching = false;
               return;
             }
             try {
               const response = await fetch(
                 `${baseApiUrl}/api/weather?city=${this.city}`
               );
-              this.weather = await response.json();
+              const resp = await response.json();
+              if (resp.error) {
+                alert(resp.error);
+              } else {
+                this.weather = resp;
+              }
             } catch (error) {
               alert("Failed to fetch weather data");
             }
+            this.searching = false;
           },
           async saveFavorite() {
             if (!this.weather) return;
+            this.saving = true;
             try {
               await fetch(`${baseApiUrl}/api/favorites`, {
                 method: "POST",
@@ -108,16 +222,23 @@
             } catch (error) {
               alert("Failed to save favorite city");
             }
+            this.saving = false;
           },
           async loadFavorites() {
             try {
               const response = await fetch(`${baseApiUrl}/api/favorites`);
-              this.favorites = await response.json();
+              const resp = await response.json();
+              if (resp.error) {
+                alert(resp.error);
+              } else {
+                this.favorites = resp;
+              }
             } catch (error) {
               alert("Failed to load favorite cities");
             }
           },
           async deleteFavorite(id) {
+            this.deleting = true;
             try {
               await fetch(`${baseApiUrl}/api/favorites/${id}`, {
                 method: "DELETE",
@@ -126,6 +247,7 @@
             } catch (error) {
               alert("Failed to delete favorite city");
             }
+            this.deleting = false;
           },
         },
         mounted() {

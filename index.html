@@ -32,7 +32,14 @@
         border-radius: 8px;
         padding: 16px;
         flex: 1 1 100%;
+
+        &.list {
+          flex-direction: column;
+          align-items: stretch;
+        }
       }
+
+
 
       input {
         border: 3px solid #000;
@@ -125,6 +132,11 @@
         border-radius: 5px;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
       }
+
+      p {
+        margin: 0;
+        padding: 0;
+      }
     </style>
   </head>
 
@@ -144,7 +156,7 @@
         </button>
       </div>
 
-      <div class="white-block">
+      <div class="white-block list">
         <template v-if="weather">
           <h3>{{ weather.name }}</h3>
           <p>Temperature: {{ weather.main.temp }}°C</p>
@@ -154,12 +166,12 @@
             <span></span>
           </button>
         </template>
-        <p v-else>Seach for a city to see the weather</p>
+        <p v-else>Seach for a city to see the weather or select one from your favorites.</p>
       </div>
 
       <h2>Favorite Cities</h2>
-      <ul class="white-block">
-        <p v-if="favorites">Seems like you dont have any favorite cities</p>
+      <ul class="white-block list">
+        <p v-if="!favorites.length">Seems like you dont have any favorite cities</p>
         <li v-for="fav in favorites" :key="fav._id">
           {{ fav.name }}
           <button :class="{loading: deleting}" :disabled="deleting" @click="() => deleteFavorite(fav._id)">
